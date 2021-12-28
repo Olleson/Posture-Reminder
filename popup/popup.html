@@ -14,7 +14,7 @@
     </header>
     <main class="center">
         <div>
-            <p id="clock">00:00</p>
+            <p id="clock">0:00:00</p>
         </div>
         <div>
             <label class="switch">
@@ -28,12 +28,13 @@
                 <option value="A">Hour</option>
                 <option value="B">Half hour</option>
                 <option value="C">Fifteen minutes</option>
+                <option value="X">dev</option>
                 <option value="D">Custom</option>
             </select>
         </div>
         <div class="custom_input">
             <label for="custom_interval">Input hour and minutes</label>
-            <input type="number" id="custom_hours" name="custom_hours" min="0" max="6" value="00">
+            <input type="number" id="custom_hours" name="custom_hours" min="0" max="6" value="0">
             <span>:</span>
             <input type="number" id="custom_minutes" name="custom_minutes" min="1" max="59" value="10">
         </div>

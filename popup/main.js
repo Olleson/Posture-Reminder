@@ -5,8 +5,12 @@ document.addEventListener("DOMContentLoaded", function () {
 const swt = document.getElementById("switch");
 const inter = document.getElementById("interval");
 const clock = document.getElementById("clock");
+const c_hours = document.getElementById("custom_hours");
+const c_minutes = document.getElementById("custom_minutes");
 
-let on = false; let intervalID; let alert_audio = new Audio('../audio/545495__ienba__notification.wav');
+let on = false; let intervalID; 
+let alert_audio = new Audio('../audio/545495__ienba__notification.wav');
+let reminderText = ["ding ding ding!", "check your back", "you know what time it is"];
 
 swt.addEventListener("click", function () {
     startStop();
@@ -22,26 +26,41 @@ function startStop() {
 }
 
 function getDuration() {
-    let duration;
-    duration = function () {
-        switch(inter.options[inter.selectedIndex].value) {
-            case "A": return 10
-            case "B": return 30
-            default: return 5
-        }
-    }();
-    console.log("duration: " + duration);
-    return duration;
+    switch (inter.options[inter.selectedIndex].value) {
+        case "A": // Hour
+            return (60 * 60);
+        case "B": // Half hour
+            return (60 * 30);
+        case "C": // Fifteen minutes
+            return (60 * 15);
+        case "X":
+            return 3;
+        case "D": 
+            return customInput();
+        default: 
+            return 5;
+    }
 }
 
-// Add hours, minutes functionality
+// Do not allow for invalid (0) durations
+// Undo toggle, trigger some animation if I can
+function customInput() {
+    if (c_hours.value == 0 && c_minutes.value == 0) {
+        alert("shut the fuck up");
+        return 2;
+    }
+    sum = (c_hours.value * 60 * 60) + (c_minutes.value * 60);   // Get total seconds of input
+    return sum;
+}
+
 // Problem: Interval starts at 9 instead of 10 first time
-// https://jsfiddle.net/wr1ua0db/17/ https://stackoverflow.com/questions/20618355/how-to-write-a-countdown-timer-in-javascript
 function startTimer(duration) {
     let r = duration; 
+    let lastSavedIndex = random(reminderText.length);
+
     intervalID = setInterval(function () {
         if (r-- <= 0) {
-            alarm();
+            lastSavedIndex = alarm(lastSavedIndex, 0);  // Alarm that avoids last index
             r = duration;
         }
         updateClockDisplay(r);
@@ -49,20 +68,49 @@ function startTimer(duration) {
 }
 
 // Add hours, minutes, functionality
+// https://newbedev.com/how-to-start-and-stop-pause-setinterval
 function stopTimer() {
     clearInterval(intervalID);
-    updateClockDisplay("00:00");
+    updateClockDisplay(0);
 }
 
-function updateClockDisplay(update) {
+// https://jsfiddle.net/wr1ua0db/17/ https://stackoverflow.com/questions/20618355/how-to-write-a-countdown-timer-in-javascript
+function updateClockDisplay(duration) {
+    let update;
+    if (duration > 0) {
+        let seconds = parseInt(duration % 60);
+        let minutes = parseInt((duration / 60) % 60);
+        let hours = parseInt((duration / 60) / 60);
+        update = (hours + ":" + ((minutes < 10) ? ("0" + minutes) : minutes) + ":" + ((seconds < 10) ? ("0" + seconds) : seconds));
+    } else {
+        update = "0:00:00";
+    }
     clock.textContent = update;
 }
 
 // https://www.py4u.net/discuss/277183
-// https://newbedev.com/how-to-start-and-stop-pause-setinterval
 // make more intuitive and not with windows alert
 // Pause interval until user clicks off alert/reminder
-function alarm() {
-    alert_audio.play();
-    alert("Ding Ding Ding");
+// Overlay notification popup
+function alarm(index, iter) {
+    let randomIndex = random(reminderText.length);
+    //console.log("old: " + index + ", new: " + randomIndex + ", iter: " + iter);
+    if (index != randomIndex) {
+        alert_audio.play();
+        alert(reminderText[randomIndex]);
+        return randomIndex;
+    } else {
+        return alarm(randomIndex, iter++);
+    }
 }
+
+// Random number from 0 to max
+function random(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+}
+    
+
+        // bad old code lmao
+        // let hours = parseInt(((duration / 60) / 60) < 1 ? "0" : ((duration / 60) / 60));
+        // let minutes = parseInt((duration / 60) == 60 ? "00" : duration / 60);
+        //update = (hours + ":" + minutes);

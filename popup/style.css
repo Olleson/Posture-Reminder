@@ -4,11 +4,16 @@
 
 body {
     height: 350px;
-    width: 300px;
+    width: 250px;
 }
 
 div {
     display: block;
+}
+
+header {
+    background-color:black;
+    color: white;
 }
 
 .center {
@@ -61,7 +66,7 @@ div {
 }
 
 input:checked+.slider {
-    background-color: #2196F3;
+    background-color: #000000;
 }
 
 input:checked+.slider:before {
@@ -69,7 +74,6 @@ input:checked+.slider:before {
     -ms-transform: translateX(33px);
     transform: translateX(33px);
 }
-
 
 input:focus+.slider {
     box-shadow: 0 0 1px #2196F3;

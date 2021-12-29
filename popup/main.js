@@ -4,11 +4,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 const swt = document.getElementById("switch");
 const inter = document.getElementById("interval");
+// const inter_custom = document.getElementById("interval_custom");
 const clock = document.getElementById("clock");
+
+const customCont = document.getElementById("custom_cont")
 const c_hours = document.getElementById("custom_hours");
 const c_minutes = document.getElementById("custom_minutes");
 
-let on = false; let intervalID; 
+let on = false; let intervalID;
 let alert_audio = new Audio('../audio/545495__ienba__notification.wav');
 let reminderText = ["ding ding ding!", "check your back", "you know what time it is"];
 
@@ -16,28 +19,50 @@ swt.addEventListener("click", function () {
     startStop();
 });
 
+inter.addEventListener("change", (e) => {
+    displayCustom(e);
+})
+
 function startStop() {
     on = !on;
     if (on) {
-        startTimer(getDuration());
+        console.log("sending...");
+        chrome.runtime.sendMessage({request: "hello"}, function(response) {
+            console.log(response.farewell);
+        })
+        // startTimer(getDuration());
     } else {
-        stopTimer();
+        // stopTimer();
+    }
+}
+
+// CSS, Animation
+function displayCustom(e) {
+    let s = window.getComputedStyle(customCont);
+    if (s.getPropertyValue("opacity") === "0" && e.target.value === "D") {
+        customCont.style.transform = "translateY(15px)";
+        customCont.style.opacity = "1";
+        // console.log("fadeIn");
+    } else if (s.getPropertyValue("opacity") === "1") {
+        customCont.style.transform = "translateY(0px)";
+        customCont.style.opacity = "0";
+        // console.log("fadeOut");
     }
 }
 
 function getDuration() {
     switch (inter.options[inter.selectedIndex].value) {
-        case "A": // Hour
+        case "A":               // Hour
             return (60 * 60);
-        case "B": // Half hour
+        case "B":               // Half hour
             return (60 * 30);
-        case "C": // Fifteen minutes
+        case "C":               // Fifteen minutes
             return (60 * 15);
         case "X":
             return 3;
-        case "D": 
+        case "D":
             return customInput();
-        default: 
+        default:
             return 5;
     }
 }
@@ -53,17 +78,17 @@ function customInput() {
     return sum;
 }
 
-// Problem: Interval starts at 9 instead of 10 first time
 function startTimer(duration) {
-    let r = duration; 
+    let r = duration + 1;
     let lastSavedIndex = random(reminderText.length);
 
     intervalID = setInterval(function () {
         if (r-- <= 0) {
-            lastSavedIndex = alarm(lastSavedIndex, 0);  // Alarm that avoids last index
+            lastSavedIndex = alarm(lastSavedIndex);  // Alarm that avoids last index
             r = duration;
         }
         updateClockDisplay(r);
+        console.log("not first");
     }, 1000);
 }
 
@@ -92,15 +117,16 @@ function updateClockDisplay(duration) {
 // make more intuitive and not with windows alert
 // Pause interval until user clicks off alert/reminder
 // Overlay notification popup
-function alarm(index, iter) {
+
+// Recursively find new indexes that didn't appear last
+function alarm(index) {
     let randomIndex = random(reminderText.length);
-    //console.log("old: " + index + ", new: " + randomIndex + ", iter: " + iter);
     if (index != randomIndex) {
         alert_audio.play();
         alert(reminderText[randomIndex]);
         return randomIndex;
     } else {
-        return alarm(randomIndex, iter++);
+        return alarm(randomIndex);
     }
 }
 
@@ -108,7 +134,7 @@ function alarm(index, iter) {
 function random(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
-    
+
 
         // bad old code lmao
         // let hours = parseInt(((duration / 60) / 60) < 1 ? "0" : ((duration / 60) / 60));

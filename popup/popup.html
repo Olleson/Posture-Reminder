@@ -8,13 +8,13 @@
 </head>
 
 <body>
-    <header class="center">
+    <header>
         <h1>POSTURE</h1>
-        <span>Settings applied after toggle</span>
+        <span id="">settings apply after activation</span>
     </header>
     <main class="center">
         <div>
-            <p id="clock">0:00:00</p>
+            <span id="clock">0:00:00</span>
         </div>
         <div>
             <label class="switch">
@@ -22,7 +22,7 @@
                 <span id="switch" class="slider"></span>
             </label>
         </div>
-        <div>
+        <div id="interval_cont">
             <label for="interval">Remind me every: </label>
             <select id="interval" name="interval">
                 <option value="A">Hour</option>
@@ -32,8 +32,8 @@
                 <option value="D">Custom</option>
             </select>
         </div>
-        <div class="custom_input">
-            <label for="custom_interval">Input hour and minutes</label>
+        <div id="custom_cont" class="custom_input hidden">
+            <label for="custom_interval">Input hour and minutes: </label><br>
             <input type="number" id="custom_hours" name="custom_hours" min="0" max="6" value="0">
             <span>:</span>
             <input type="number" id="custom_minutes" name="custom_minutes" min="1" max="59" value="10">

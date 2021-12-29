@@ -3,35 +3,70 @@
 }
 
 body {
-    height: 350px;
+    /* height: fit-content; */
+    height: 380px;
     width: 250px;
+    margin: 0;
 }
 
 div {
     display: block;
+    padding: 1em;
 }
 
 header {
-    background-color:black;
-    color: white;
+    background-color: rgb(32, 31, 31);
+    color: rgb(255, 255, 255);
+    text-align: center;
+    height: fit-content;
+    padding: 1em;
+}
+
+h1 {
+    font-size: 2rem;
+    margin: 0;
 }
 
 .center {
     text-align: center;
     width: 80%;
-    /* height: 80%; */
     margin: auto;
 }
 
 #clock {
-    font-size: 50px;
+    text-align: center;
+    font-size: 3rem;
+}
+
+#interval_cont {
+    padding-bottom: 0;
+}
+
+.custom_input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    height: fit-content;
+    width: 50%;
+
+    border-style: double;
+    border-color: #000000;
+    border-width: 2px;
+    border-top: none;
+
+    opacity: 0;
+
+    transition: transform 0.5s, opacity 0.5s;
 }
 
 /*https://www.w3schools.com/howto/howto_css_switch.asp*/
 .switch {
     position: relative;
     display: inline-block;
-    width: 80px;
+    width: 100px;
     height: 50px;
 }
 
@@ -49,7 +84,6 @@ header {
     right: 0;
     bottom: 0;
     background-color: #ccc;
-    -webkit-transition: .4s;
     transition: .4s;
 }
 
@@ -61,7 +95,6 @@ header {
     left: 5px;
     bottom: 5px;
     background-color: white;
-    -webkit-transition: .4s;
     transition: .4s;
 }
 
@@ -70,13 +103,7 @@ input:checked+.slider {
 }
 
 input:checked+.slider:before {
-    -webkit-transform: translateX(33px);
-    -ms-transform: translateX(33px);
-    transform: translateX(33px);
-}
-
-input:focus+.slider {
-    box-shadow: 0 0 1px #2196F3;
+    transform: translateX(100%);
 }
 
 /*-------------*/

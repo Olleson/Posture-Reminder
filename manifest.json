@@ -10,15 +10,6 @@
         "scripts": [
             "popup/background.js"
         ]
-    },
-    "content_scripts": [
-        {
-            "matches": [
-                "<all_urls>"
-            ],
-            "css": [
-                "popup/style.css"
-            ]
-        }
-    ]
+    }
+    
 }

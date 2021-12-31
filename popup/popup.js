@@ -1,90 +1,54 @@
 /*
 save settings and preload the popup with them so that user doesn't have to re-input (time interval)
 save the settings when toggle is triggered (if settings have changed)
+when clicking off the extension, the timer resets to 0:00:00
+    -> either move the updateDisplay code to background, making it change
+        in the background all the time
+    -> or cache the last value and replace that in the html - keeps this consistent ?
+when clicking off the extension, switch is toggled off upon return 
+    -> revisit the css and the startStop(); script to detect states instead
+        of clicks
 */
 
-// document.addEventListener("DOMContentLoaded", function () {
-//     console.log("loaded");
-// });
+// Base elements
+const sw = document.getElementById("switch");
+const interval = document.getElementById("interval");
+const clockDisplay = document.getElementById("clock");
 
-const swt = document.getElementById("switch");
-const inter = document.getElementById("interval");
-const clock = document.getElementById("clock");
+// Custom Interval Input
+const customHours = document.getElementById("custom_hours");
+const customMinutes = document.getElementById("custom_minutes");
+const customContainer = document.getElementById("custom_cont")
 
-const c_hours = document.getElementById("custom_hours");
-const c_minutes = document.getElementById("custom_minutes");
-const customCont = document.getElementById("custom_cont")
-
-let on = false; let intervalID;
-
-let alert_audio = new Audio('../audio/545495__ienba__notification.wav');
-let reminderText = ["ding ding ding!", "check your back", "you know what time it is"];
-
-swt.addEventListener("click", function () {
+sw.addEventListener("click", function () {
     startStop();
 });
 
-inter.addEventListener("change", (e) => {
+interval.addEventListener("change", (e) => {
     displayCustom(e);
 })
 
 function startStop() {
-    on = !on;
-    if (on) {
+    if (sw.checked) {
         console.log("sending...");
-        chrome.runtime.sendMessage("START_TIMER", function (response) {
+        chrome.runtime.sendMessage({
+            req: "START_TIMER",
+            duration: getDuration(),
+            state: sw.checked,
+            clockDisplay: clockDisplay.textContent
+        }, function (response) {
             console.log("received: " + response);
         })
     } else {
         console.log("sending...");
-        chrome.runtime.sendMessage("STOP_TIMER", function (response) {
+        chrome.runtime.sendMessage({ req: "STOP_TIMER", state: sw.checked }, function (response) {
             console.log("received: " + response);
         })
     }
 }
 
-// https://newbedev.com/how-to-start-and-stop-pause-setinterval
-export function stopTimer() {
-    clearInterval(intervalID);
-    updateClockDisplay(0);
-}
-
-export function startTimer(duration) {
-    console.log("starttimer()");
-    let r = duration + 1;
-    let lastSavedIndex = random(reminderText.length);
-
-    intervalID = setInterval(function () {
-        if (r-- <= 0) {
-            lastSavedIndex = alarm(lastSavedIndex);  // Alarm that avoids last index
-            r = duration;
-        }
-        updateClockDisplay(r);
-    }, 1000);
-}
-
-// https://www.py4u.net/discuss/277183
-// make more intuitive and not with windows alert
-// Pause interval until user clicks off alert/reminder
-// Overlay notification popup
-
-// Recursively find new index that was not the last index
-// Smarter solution is to cache the old index and then compare
-export function alarm(index) {
-    let randomIndex = random(reminderText.length);
-    if (index != randomIndex) {
-        console.log("Found new index!");
-        alert_audio.play();
-        alert(reminderText[randomIndex]);
-        return randomIndex;
-    } else {
-        console.log("Same index - recursively finding new one...");
-        return alarm(randomIndex);
-    }
-}
-
-export function getDuration() {
-    switch (inter.options[inter.selectedIndex].value) {
+function getDuration() {
+    switch (interval.options[interval.selectedIndex].value) {
         case "A":               // Hour
             return (60 * 60);
         case "B":               // Half hour
@@ -102,47 +66,62 @@ export function getDuration() {
 
 // Do not allow for invalid (0) durations
 // Undo toggle, trigger some animation if I can
-export function customInput() {
-    if (c_hours.value == 0 && c_minutes.value == 0) {
+function customInput() {
+    if (customHours.value <= 0 || customMinutes.value <= 0 || customHours.value > 10 || customMinutes > 60) {
         alert("shut the fuck up");
-        return 2;
+        return "invalid";
     }
-    sum = (c_hours.value * 60 * 60) + (c_minutes.value * 60);   // Get total seconds of input
-    return sum;
+    return (customHours.value * 60 * 60) + (customMinutes.value * 60);   // Get total seconds of input
 }
 
 function displayCustom(e) {
-    let s = window.getComputedStyle(customCont);
+    let s = window.getComputedStyle(customContainer);
     if (s.getPropertyValue("opacity") === "0" && e.target.value === "D") {
-        customCont.style.transform = "translateY(15px)";
-        customCont.style.opacity = "1";
+        customContainer.style.transform = "translateY(15px)";
+        customContainer.style.opacity = "1";
         // console.log("fadeIn");
     } else if (s.getPropertyValue("opacity") === "1") {
-        customCont.style.transform = "translateY(0px)";
-        customCont.style.opacity = "0";
+        customContainer.style.transform = "translateY(0px)";
+        customContainer.style.opacity = "0";
         // console.log("fadeOut");
     }
 }
 
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//     try {
+//         // console.log("received message from: " + sender.id);
+//         // console.log("getting: " + request.req);
+
+//         if (request.req === "UPDATE_DISPLAY") {
+//             updateClockDisplay(request.seconds);
+//             return sendResponse("updating display");
+//         }
+
+//         return sendResponse("did not match any cases");
+//     } catch (err) {
+//         console.log(err + " from " + self);
+//         return sendResponse("failed");
+//     }
+// })
+
 // https://jsfiddle.net/wr1ua0db/17/ https://stackoverflow.com/questions/20618355/how-to-write-a-countdown-timer-in-javascript
-export function updateClockDisplay(duration) {
-    let update;
-    if (duration > 0) {
-        let seconds = parseInt(duration % 60);
-        let minutes = parseInt((duration / 60) % 60);
-        let hours = parseInt((duration / 60) / 60);
-        update = (hours + ":" + ((minutes < 10) ? ("0" + minutes) : minutes) + ":" + ((seconds < 10) ? ("0" + seconds) : seconds));
-    } else {
-        update = "0:00:00";
-    }
-    clock.textContent = update;
-}
+// function updateClockDisplay(duration) {
+//     let update;
+//     if (duration > 0) {
+//         let seconds = parseInt(duration % 60);
+//         let minutes = parseInt((duration / 60) % 60);
+//         let hours = parseInt((duration / 60) / 60);
+//         update = (hours + ":" + ((minutes < 10) ? ("0" + minutes) : minutes) + ":" + ((seconds < 10) ? ("0" + seconds) : seconds));
+//     } else {
+//         update = "0:00:00";
+//     }
+//     clock.textContent = update;
+// }
 
-
-// Random number from 0 to max
-export function random(max) {
-    return Math.floor(Math.random() * Math.floor(max));
-}
+// // Random number from 0 to max
+// function random(max) {
+//     return Math.floor(Math.random() * Math.floor(max));
+// }
 
         // bad old code lmao    - dont ever do this
         // let hours = parseInt(((duration / 60) / 60) < 1 ? "0" : ((duration / 60) / 60));
